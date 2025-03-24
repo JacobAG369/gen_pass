@@ -9,7 +9,7 @@ import Int "mo:base/Int";
 
 actor PasswordGenerator {
     
-    // Conjuntos de caracteres para las contraseñas
+    
     let mayusculas : [Char] = [
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
@@ -27,9 +27,9 @@ actor PasswordGenerator {
         '=', '[', ']', '{', '}', ';', ':', ',', '.', '<', '>', '/', '?'
     ];
     
-    // Función para generar un número aleatorio entre 0 y max-1
+    
     private func randomInt(max : Nat) : async Nat {
-        // Asegurarse de que max sea mayor que 0
+        
         if (max == 0) {
             return 0;
         };
@@ -37,8 +37,7 @@ actor PasswordGenerator {
         let seed = await Random.blob();
         let random = Random.Finite(seed);
         
-        // Usar módulo para obtener un número dentro del rango
-        // y manejar el caso cuando max > 255 (límite de Nat8)
+        
         let randomBytes = random.byte();
         switch (randomBytes) {
             case null { 0 };
@@ -48,22 +47,22 @@ actor PasswordGenerator {
         };
     };
     
-    // Función para obtener un caracter aleatorio de un array
+    
     private func randomChar(chars : [Char]) : async Char {
         if (chars.size() == 0) {
-            return ' '; // Carácter por defecto en caso de array vacío
+            return ' '; 
         };
         
         let index = await randomInt(chars.size());
-        // Asegurarse de que el índice está dentro de los límites
+        
         let safeIndex = if (index >= chars.size()) { chars.size() - 1 } else { index };
         chars[safeIndex];
     };
     
-    // Función para mezclar un array de caracteres
+    
     private func shuffleArray(arr : [Char]) : async [Char] {
         if (arr.size() <= 1) {
-            return arr; // No es necesario mezclar
+            return arr; 
         };
         
         let mutableArr = Array.thaw<Char>(arr);
@@ -89,17 +88,15 @@ actor PasswordGenerator {
         usarSimbolos : Bool
     ) : async Text {
         
-        // Validar que al menos un conjunto de caracteres esté seleccionado
+        
         if (not usarMayusculas and not usarMinusculas and not usarNumeros and not usarSimbolos) {
             return "Error: Selecciona al menos un tipo de caracteres";
         };
         
-        // Validar longitud mínima
         if (longitud < 6) {
             return "Error: La longitud mínima recomendada es 6";
         };
         
-        // Crear un array de caracteres disponibles
         var caracteresDisponibles : [Char] = [];
         
         if (usarMayusculas) {
@@ -118,15 +115,15 @@ actor PasswordGenerator {
             caracteresDisponibles := Array.append(caracteresDisponibles, simbolos);
         };
         
-        // Verificar que tengamos caracteres disponibles
+        
         if (caracteresDisponibles.size() == 0) {
             return "Error: No hay caracteres disponibles";
         };
         
-        // Generar contraseña
+        
         var passwordChars : [var Char] = Array.init<Char>(longitud, ' ');
         
-        // Llenar el array con caracteres aleatorios
+        /
         for (i in Iter.range(0, longitud - 1)) {
             let randomIndex = await randomInt(caracteresDisponibles.size());
             // Asegurar índice dentro de límites
@@ -138,8 +135,7 @@ actor PasswordGenerator {
             passwordChars[i] := caracteresDisponibles[safeIndex];
         };
         
-        // Asegurar que la contraseña tiene al menos un caracter de cada tipo seleccionado
-        // Solo si la longitud es suficiente
+      
         var index : Nat = 0;
         
         if (usarMayusculas and index < longitud and mayusculas.size() > 0) {
@@ -166,14 +162,13 @@ actor PasswordGenerator {
             index += 1;
         };
         
-        // Convertir el array mutable a inmutable y mezclar
+       
         let shuffledChars = await shuffleArray(Array.freeze(passwordChars));
         
-        // Convertir el array de caracteres a texto
         Text.fromIter(Iter.fromArray(shuffledChars));
     };
     
-    // Función para verificar la fortaleza de una contraseña
+    // FUncion para la fortaleza de la contraseña
     public func verificarFortaleza(password : Text) : async Text {
         let longitud = password.size();
         let chars = Iter.toArray(Text.toIter(password));
